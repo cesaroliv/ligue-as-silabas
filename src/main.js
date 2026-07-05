@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import BootScene from './scenes/BootScene.js';
+import GameScene from './scenes/GameScene.js';
 
 // Resolução base em retrato (mobile-first).
 // O modo FIT redimensiona o canvas para caber em qualquer tela
@@ -14,7 +15,9 @@ const config = {
     width: 720,
     height: 1280,
   },
-  scene: [BootScene],
+  scene: [BootScene, GameScene],
 };
 
-new Phaser.Game(config);
+// Guardar a instância em window ajuda a inspecionar o jogo no console
+// do navegador e permite testes automatizados.
+window.game = new Phaser.Game(config);

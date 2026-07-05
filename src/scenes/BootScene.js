@@ -21,5 +21,10 @@ export default class BootScene extends Phaser.Scene {
         align: 'center',
       })
       .setOrigin(0.5);
+
+    // Mostra o título por um instante e entra no jogo
+    this.time.delayedCall(1200, () => {
+      this.scene.start('Game');
+    });
   }
 }
