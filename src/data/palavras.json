@@ -1,0 +1,27 @@
+[
+  {
+    "palavra": "BOLA",
+    "silabas": ["BO", "LA"],
+    "distratores": ["FI", "PE"]
+  },
+  {
+    "palavra": "SAPO",
+    "silabas": ["SA", "PO"],
+    "distratores": ["LU", "ME"]
+  },
+  {
+    "palavra": "GATO",
+    "silabas": ["GA", "TO"],
+    "distratores": ["BI", "FE"]
+  },
+  {
+    "palavra": "PATO",
+    "silabas": ["PA", "TO"],
+    "distratores": ["LU", "MI"]
+  },
+  {
+    "palavra": "MALA",
+    "silabas": ["MA", "LA"],
+    "distratores": ["TO", "PI"]
+  }
+]
