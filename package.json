@@ -6,6 +6,7 @@
   "description": "Jogo educacional de alfabetização PT-BR: ligue as sílabas para formar palavras",
   "scripts": {
     "dev": "vite",
+    "dev:celular": "vite --host",
     "build": "vite build",
     "preview": "vite preview"
   },
