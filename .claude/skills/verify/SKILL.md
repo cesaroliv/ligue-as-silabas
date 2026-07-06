@@ -23,6 +23,17 @@ Jogo Phaser 3 em canvas — a superfície é o navegador. Não basta `npm run bu
    não chamar métodos da cena.
 6. Capturar `console` type=error e `pageerror` — critério do projeto é console limpo.
 
+## Áudio (S4+)
+
+- Boot pré-carrega todos os MP3 de `public/assets/audio/` e vai para a cena
+  `Selecao` (10 botões). O clique num botão é o gesto que desbloqueia o áudio.
+- Lançar o navegador com `--autoplay-policy=no-user-gesture-required` para
+  testes headless.
+- Conferir reprodução com `window.game.sound.getAllPlaying().map(s => s.key)`
+  logo após a ação (palavra ~1s falada; polling de 150ms funciona).
+- Config por fase: `scene.numeroFase`, `scene.velocidadeQueda`
+  (fases 9-10 = 103,5), `scene.bolhas.length` (2 síl + 4 distratores = 6).
+
 ## Fluxos que valem dirigir
 
 - Clicar bolha errada / fora de ordem → `proximaSilaba` não muda, bolha balança e segue.

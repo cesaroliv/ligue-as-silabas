@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import BootScene from './scenes/BootScene.js';
+import SelecaoScene from './scenes/SelecaoScene.js';
 import GameScene from './scenes/GameScene.js';
 
 // Resolução base em retrato (mobile-first).
@@ -15,7 +16,7 @@ const config = {
     width: 720,
     height: 1280,
   },
-  scene: [BootScene, GameScene],
+  scene: [BootScene, SelecaoScene, GameScene],
 };
 
 // Guardar a instância em window ajuda a inspecionar o jogo no console

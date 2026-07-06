@@ -1,12 +1,13 @@
 import Phaser from 'phaser';
-import palavras from '../data/palavras.json';
+import dados from '../data/palavras.json';
 
 // Aparência das bolhas
 const RAIO_BOLHA = 78;
 const CORES_BOLHAS = [0xff6b6b, 0xffc93d, 0x6bcb77, 0x4d96ff, 0xff9f45, 0xc780fa];
 
-// Queda suave e constante (pixels por segundo)
-const VELOCIDADE_QUEDA = 90;
+// Queda suave e constante (pixels por segundo) — multiplicada
+// pela configuração de cada fase (fases 9-10 são 15% mais rápidas)
+const VELOCIDADE_BASE = 90;
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -14,16 +15,30 @@ export default class GameScene extends Phaser.Scene {
   }
 
   init(data) {
+    this.numeroFase = data.fase ?? 1;
     this.indicePalavra = data.indicePalavra ?? 0;
   }
 
   create() {
     const { width } = this.scale;
 
-    this.dados = palavras[this.indicePalavra];
+    this.fase = dados.fases.find((f) => f.fase === this.numeroFase);
+    this.dados = this.fase.palavras[this.indicePalavra];
+    this.velocidadeQueda = VELOCIDADE_BASE * this.fase.multiplicadorVelocidade;
     this.proximaSilaba = 0; // posição da próxima sílaba a acertar
     this.travado = false; // trava toques durante a celebração
     this.bolhas = [];
+
+    // Indicador discreto da fase (ajuda nos testes)
+    this.add
+      .text(20, 20, `FASE ${this.numeroFase}`, {
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '32px',
+        fontStyle: 'bold',
+        color: '#ffffff',
+      })
+      .setAlpha(0.7)
+      .setDepth(10);
 
     // --- Figura placeholder: retângulo cinza com o nome da palavra ---
     const figura = this.add.graphics().setDepth(10);
@@ -41,6 +56,13 @@ export default class GameScene extends Phaser.Scene {
       })
       .setOrigin(0.5)
       .setDepth(11);
+
+    // Tocar na figura repete o nome da palavra — a criança pode
+    // ouvir de novo quantas vezes quiser
+    this.add
+      .zone(width / 2, 170, 400, 220)
+      .setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => this.falarPalavra());
 
     // --- Slots vazios, um por sílaba ---
     this.slots = [];
@@ -73,6 +95,37 @@ export default class GameScene extends Phaser.Scene {
     textos.forEach((silaba, i) => {
       this.criarBolha(silaba, cores[i % cores.length], i, textos.length);
     });
+
+    // Narra a palavra ao aparecer
+    this.time.delayedCall(300, () => this.falarPalavra());
+  }
+
+  falarPalavra() {
+    this.tocarAudio(`palavra_${this.dados.palavra.toLowerCase()}`);
+  }
+
+  tocarAudio(chave) {
+    if (this.cache.audio.exists(chave)) {
+      this.sound.play(chave);
+    }
+  }
+
+  // Som curto, suave e neutro para o erro — gerado na hora,
+  // nunca um som "de derrota"
+  somErro() {
+    const ctx = this.sound.context;
+    if (!ctx || ctx.state !== 'running') return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(280, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(190, ctx.currentTime + 0.16);
+    gain.gain.setValueAtTime(0.12, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.22);
   }
 
   criarBolha(silaba, cor, ordem, totalBolhas) {
@@ -124,7 +177,7 @@ export default class GameScene extends Phaser.Scene {
 
     for (const bolha of this.bolhas) {
       if (bolha.capturada) continue;
-      bolha.y += (VELOCIDADE_QUEDA * delta) / 1000;
+      bolha.y += (this.velocidadeQueda * delta) / 1000;
 
       // Chegou embaixo: volta ao topo em posição horizontal aleatória
       if (bolha.y > height + RAIO_BOLHA) {
@@ -154,6 +207,8 @@ export default class GameScene extends Phaser.Scene {
     bolha.disableInteractive();
     bolha.setDepth(20); // voa por cima de tudo
 
+    this.tocarAudio(`silaba_${bolha.silaba.toLowerCase()}`);
+
     const slot = this.slots[this.proximaSilaba];
     this.proximaSilaba++;
 
@@ -174,6 +229,7 @@ export default class GameScene extends Phaser.Scene {
 
   errou(bolha) {
     bolha.balancando = true;
+    this.somErro();
     this.tweens.add({
       targets: bolha,
       angle: { from: -12, to: 12 },
@@ -191,6 +247,9 @@ export default class GameScene extends Phaser.Scene {
   celebrar() {
     this.travado = true;
 
+    // Fala a palavra inteira na celebração
+    this.falarPalavra();
+
     // A palavra pulsa na figura
     this.tweens.add({
       targets: this.textoPalavra,
@@ -203,10 +262,10 @@ export default class GameScene extends Phaser.Scene {
 
     this.time.delayedCall(1500, () => {
       const proxima = this.indicePalavra + 1;
-      if (proxima >= palavras.length) {
+      if (proxima >= this.fase.palavras.length) {
         this.faseCompleta();
       } else {
-        this.scene.restart({ indicePalavra: proxima });
+        this.scene.restart({ fase: this.numeroFase, indicePalavra: proxima });
       }
     });
   }
@@ -235,9 +294,15 @@ export default class GameScene extends Phaser.Scene {
       ease: 'Back.easeOut',
     });
 
-    // Recomeça da primeira palavra (menu e estrelas chegam nos próximos segmentos)
+    // Avança sozinho para a próxima fase; depois da 10ª volta à seleção
     this.time.delayedCall(3000, () => {
-      this.scene.restart({ indicePalavra: 0 });
+      const proximaFase = this.numeroFase + 1;
+      const existe = dados.fases.some((f) => f.fase === proximaFase);
+      if (existe) {
+        this.scene.restart({ fase: proximaFase, indicePalavra: 0 });
+      } else {
+        this.scene.start('Selecao');
+      }
     });
   }
 }
