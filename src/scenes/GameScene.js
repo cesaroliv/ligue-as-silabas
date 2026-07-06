@@ -1,13 +1,23 @@
 import Phaser from 'phaser';
 import dados from '../data/palavras.json';
+import {
+  criarFundo,
+  texturaBolha,
+  texturaSlot,
+  texturaCartao,
+  texturaConfete,
+  CORES_BOLHAS,
+  FONTE,
+} from '../ui/visual.js';
 
-// Aparência das bolhas
 const RAIO_BOLHA = 78;
-const CORES_BOLHAS = [0xff6b6b, 0xffc93d, 0x6bcb77, 0x4d96ff, 0xff9f45, 0xc780fa];
 
 // Queda suave e constante (pixels por segundo) — multiplicada
 // pela configuração de cada fase (fases 9-10 são 15% mais rápidas)
 const VELOCIDADE_BASE = 90;
+
+// Painel da figura
+const CARTAO = { x: 360, y: 220, largura: 420, altura: 320 };
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -29,42 +39,76 @@ export default class GameScene extends Phaser.Scene {
     this.travado = false; // trava toques durante a celebração
     this.bolhas = [];
 
-    // Indicador discreto da fase (ajuda nos testes)
+    this.fundo = criarFundo(this, this.numeroFase);
+
+    this.criarPainelFigura();
+    this.criarPontinhosProgresso();
+    this.criarSlots();
+    this.criarBolhas();
+
+    // Narra a palavra ao aparecer
+    this.time.delayedCall(300, () => this.falarPalavra());
+  }
+
+  // --- Painel superior: cartão branco com a figura da palavra ---
+  criarPainelFigura() {
+    const { x, y, largura, altura } = CARTAO;
+
     this.add
-      .text(20, 20, `FASE ${this.numeroFase}`, {
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '32px',
-        fontStyle: 'bold',
-        color: '#ffffff',
-      })
-      .setAlpha(0.7)
+      .image(x, y, texturaCartao(this, largura, altura))
       .setDepth(10);
 
-    // --- Figura placeholder: retângulo cinza com o nome da palavra ---
-    const figura = this.add.graphics().setDepth(10);
-    figura.fillStyle(0xd9d9d9, 1);
-    figura.fillRoundedRect(width / 2 - 200, 60, 400, 220, 24);
-    figura.lineStyle(6, 0xffffff, 1);
-    figura.strokeRoundedRect(width / 2 - 200, 60, 400, 220, 24);
+    const chaveFigura = `figura_${this.dados.palavra.toLowerCase()}`;
+    if (this.textures.exists(chaveFigura)) {
+      // Figura real: encaixa dentro do cartão mantendo a proporção
+      this.figura = this.add.image(x, y, chaveFigura).setDepth(11);
+      const escala = Math.min(
+        (largura - 60) / this.figura.width,
+        (altura - 60) / this.figura.height
+      );
+      this.figura.setScale(escala);
+    } else {
+      // Fallback: enquanto o PNG não existe, mostra o nome da palavra
+      this.figura = this.add
+        .text(x, y, this.dados.palavra, {
+          fontFamily: FONTE,
+          fontSize: '76px',
+          color: '#9aa5b1',
+        })
+        .setOrigin(0.5)
+        .setDepth(11);
+    }
 
-    this.textoPalavra = this.add
-      .text(width / 2, 170, this.dados.palavra, {
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '72px',
-        fontStyle: 'bold',
-        color: '#555555',
-      })
-      .setOrigin(0.5)
-      .setDepth(11);
-
-    // Tocar na figura repete o nome da palavra — a criança pode
+    // Tocar no cartão repete o nome da palavra — a criança pode
     // ouvir de novo quantas vezes quiser
     this.add
-      .zone(width / 2, 170, 400, 220)
+      .zone(x, y, largura, altura)
       .setInteractive({ useHandCursor: true })
       .on('pointerdown', () => this.falarPalavra());
+  }
 
-    // --- Slots vazios, um por sílaba ---
+  // --- Pontinhos de progresso: um por palavra da fase ---
+  criarPontinhosProgresso() {
+    const total = this.fase.palavras.length;
+    this.pontinhos = [];
+    const raio = 13;
+    const espaco = 42;
+    const inicioX = 44;
+    const yPonto = 46;
+
+    for (let i = 0; i < total; i++) {
+      const completo = i < this.indicePalavra;
+      const ponto = this.add
+        .circle(inicioX + i * espaco, yPonto, raio, 0xffffff, completo ? 1 : 0.3)
+        .setStrokeStyle(4, 0xffffff, 0.9)
+        .setDepth(12);
+      if (completo) ponto.setFillStyle(0xffb830, 1);
+      this.pontinhos.push(ponto);
+    }
+  }
+
+  // --- Slots tracejados, um por sílaba ---
+  criarSlots() {
     this.slots = [];
     const larguraSlot = 170;
     const alturaSlot = 130;
@@ -72,20 +116,18 @@ export default class GameScene extends Phaser.Scene {
     const totalSilabas = this.dados.silabas.length;
     const larguraTotal =
       totalSilabas * larguraSlot + (totalSilabas - 1) * espacamento;
-    const inicioX = width / 2 - larguraTotal / 2;
-    const slotY = 390;
+    const inicioX = this.scale.width / 2 - larguraTotal / 2;
+    const slotY = 480;
 
+    const chave = texturaSlot(this, larguraSlot, alturaSlot);
     for (let i = 0; i < totalSilabas; i++) {
       const x = inicioX + i * (larguraSlot + espacamento) + larguraSlot / 2;
-      const g = this.add.graphics().setDepth(10);
-      g.fillStyle(0xffffff, 0.35);
-      g.fillRoundedRect(x - larguraSlot / 2, slotY - alturaSlot / 2, larguraSlot, alturaSlot, 20);
-      g.lineStyle(5, 0xffffff, 0.9);
-      g.strokeRoundedRect(x - larguraSlot / 2, slotY - alturaSlot / 2, larguraSlot, alturaSlot, 20);
+      this.add.image(x, slotY, chave).setDepth(10);
       this.slots.push({ x, y: slotY });
     }
+  }
 
-    // --- Bolhas: sílabas corretas + distratores, embaralhadas ---
+  criarBolhas() {
     const textos = Phaser.Utils.Array.Shuffle([
       ...this.dados.silabas,
       ...this.dados.distratores,
@@ -95,9 +137,64 @@ export default class GameScene extends Phaser.Scene {
     textos.forEach((silaba, i) => {
       this.criarBolha(silaba, cores[i % cores.length], i, textos.length);
     });
+  }
 
-    // Narra a palavra ao aparecer
-    this.time.delayedCall(300, () => this.falarPalavra());
+  criarBolha(silaba, cor, ordem, totalBolhas) {
+    const { width } = this.scale;
+
+    // Cada bolha nasce na sua "faixa" horizontal para não empilharem
+    const margem = RAIO_BOLHA + 20;
+    const larguraFaixa = (width - margem * 2) / totalBolhas;
+    const x =
+      margem +
+      ordem * larguraFaixa +
+      larguraFaixa / 2 +
+      Phaser.Math.Between(-20, 20);
+
+    // Nascem escalonadas acima da tela, para entrarem aos poucos
+    const y = -RAIO_BOLHA - ordem * 280;
+
+    const imagem = this.add.image(0, 0, texturaBolha(this, cor, RAIO_BOLHA));
+    const texto = this.add
+      .text(0, -4, silaba, {
+        fontFamily: FONTE,
+        fontSize: '62px',
+        color: '#ffffff',
+        stroke: '#33415c',
+        strokeThickness: 9,
+      })
+      .setOrigin(0.5);
+
+    const bolha = this.add.container(x, y, [imagem, texto]).setDepth(1);
+    bolha.silaba = silaba;
+    bolha.capturada = false;
+    bolha.balancando = false;
+
+    // Área de toque circular, um pouco maior que a bolha (dedos pequenos)
+    bolha.setInteractive(
+      new Phaser.Geom.Circle(0, 0, RAIO_BOLHA + 14),
+      Phaser.Geom.Circle.Contains
+    );
+    bolha.on('pointerdown', () => this.tocouBolha(bolha));
+
+    this.bolhas.push(bolha);
+  }
+
+  update(_time, delta) {
+    const { width, height } = this.scale;
+
+    this.fundo?.atualizar(delta);
+
+    for (const bolha of this.bolhas) {
+      if (bolha.capturada) continue;
+      bolha.y += (this.velocidadeQueda * delta) / 1000;
+
+      // Chegou embaixo: volta ao topo em posição horizontal aleatória
+      if (bolha.y > height + RAIO_BOLHA) {
+        bolha.y = -RAIO_BOLHA - Phaser.Math.Between(0, 160);
+        bolha.x = Phaser.Math.Between(RAIO_BOLHA + 20, width - RAIO_BOLHA - 20);
+      }
+    }
   }
 
   falarPalavra() {
@@ -126,68 +223,6 @@ export default class GameScene extends Phaser.Scene {
     gain.connect(ctx.destination);
     osc.start();
     osc.stop(ctx.currentTime + 0.22);
-  }
-
-  criarBolha(silaba, cor, ordem, totalBolhas) {
-    const { width } = this.scale;
-
-    // Cada bolha nasce na sua "faixa" horizontal para não empilharem
-    const margem = RAIO_BOLHA + 20;
-    const larguraFaixa = (width - margem * 2) / totalBolhas;
-    const x =
-      margem +
-      ordem * larguraFaixa +
-      larguraFaixa / 2 +
-      Phaser.Math.Between(-20, 20);
-
-    // Nascem escalonadas acima da tela, para entrarem aos poucos
-    const y = -RAIO_BOLHA - ordem * 280;
-
-    const circulo = this.add.circle(0, 0, RAIO_BOLHA, cor, 0.9);
-    circulo.setStrokeStyle(6, 0xffffff, 0.9);
-
-    const texto = this.add
-      .text(0, 0, silaba, {
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '60px',
-        fontStyle: 'bold',
-        color: '#ffffff',
-        stroke: '#33415c',
-        strokeThickness: 8,
-      })
-      .setOrigin(0.5);
-
-    const bolha = this.add.container(x, y, [circulo, texto]).setDepth(1);
-    bolha.silaba = silaba;
-    bolha.capturada = false;
-    bolha.balancando = false;
-
-    // Área de toque circular, um pouco maior que a bolha (dedos pequenos)
-    bolha.setInteractive(
-      new Phaser.Geom.Circle(0, 0, RAIO_BOLHA + 14),
-      Phaser.Geom.Circle.Contains
-    );
-    bolha.on('pointerdown', () => this.tocouBolha(bolha));
-
-    this.bolhas.push(bolha);
-  }
-
-  update(_time, delta) {
-    const { width, height } = this.scale;
-
-    for (const bolha of this.bolhas) {
-      if (bolha.capturada) continue;
-      bolha.y += (this.velocidadeQueda * delta) / 1000;
-
-      // Chegou embaixo: volta ao topo em posição horizontal aleatória
-      if (bolha.y > height + RAIO_BOLHA) {
-        bolha.y = -RAIO_BOLHA - Phaser.Math.Between(0, 160);
-        bolha.x = Phaser.Math.Between(
-          RAIO_BOLHA + 20,
-          width - RAIO_BOLHA - 20
-        );
-      }
-    }
   }
 
   tocouBolha(bolha) {
@@ -219,41 +254,79 @@ export default class GameScene extends Phaser.Scene {
       scale: 0.82,
       duration: 450,
       ease: 'Back.easeOut',
-      onComplete: () => {
-        if (this.proximaSilaba >= this.dados.silabas.length) {
-          this.celebrar();
-        }
-      },
+      onComplete: () => this.encaixou(bolha, slot),
     });
   }
 
-  errou(bolha) {
-    bolha.balancando = true;
-    this.somErro();
+  // Animação de "encaixe": squash da bolha + anel de brilho no slot
+  encaixou(bolha, slot) {
     this.tweens.add({
       targets: bolha,
-      angle: { from: -12, to: 12 },
+      scaleX: 0.94,
+      scaleY: 0.68,
       duration: 90,
       yoyo: true,
-      repeat: 3,
       ease: 'Sine.easeInOut',
-      onComplete: () => {
-        bolha.angle = 0;
-        bolha.balancando = false;
-      },
+      onComplete: () => bolha.setScale(0.82),
     });
+
+    const anel = this.add
+      .circle(slot.x, slot.y, RAIO_BOLHA * 0.9)
+      .setStrokeStyle(8, 0xffffff, 0.9)
+      .setDepth(21)
+      .setScale(0.6);
+    this.tweens.add({
+      targets: anel,
+      scale: 1.35,
+      alpha: 0,
+      duration: 380,
+      ease: 'Cubic.easeOut',
+      onComplete: () => anel.destroy(),
+    });
+
+    if (this.proximaSilaba >= this.dados.silabas.length) {
+      this.celebrar();
+    }
+  }
+
+  confete(x, y, quantidade) {
+    const particulas = this.add.particles(x, y, texturaConfete(this), {
+      speed: { min: 240, max: 520 },
+      angle: { min: 230, max: 310 }, // jorra para cima, abre em leque
+      gravityY: 900,
+      lifespan: 1400,
+      quantity: quantidade,
+      scale: { start: 1, end: 0.2 },
+      rotate: { min: 0, max: 360 },
+      tint: CORES_BOLHAS,
+      emitting: false,
+    });
+    particulas.setDepth(25);
+    particulas.explode(quantidade);
+    this.time.delayedCall(1600, () => particulas.destroy());
   }
 
   celebrar() {
     this.travado = true;
 
-    // Fala a palavra inteira na celebração
+    // Fala a palavra inteira, solta confete e acende o pontinho
     this.falarPalavra();
+    this.confete(CARTAO.x, CARTAO.y - 40, 46);
 
-    // A palavra pulsa na figura
+    const ponto = this.pontinhos[this.indicePalavra];
+    ponto.setFillStyle(0xffb830, 1);
     this.tweens.add({
-      targets: this.textoPalavra,
-      scale: 1.35,
+      targets: ponto,
+      scale: 1.6,
+      duration: 200,
+      yoyo: true,
+      ease: 'Back.easeOut',
+    });
+
+    // A figura pulsa
+    this.tweens.add({
+      targets: this.figura,
+      scale: this.figura.scale * 1.18,
       duration: 250,
       yoyo: true,
       repeat: 2,
@@ -273,14 +346,15 @@ export default class GameScene extends Phaser.Scene {
   faseCompleta() {
     const { width, height } = this.scale;
 
+    this.confete(width / 2, height / 2, 80);
+
     const aviso = this.add
       .text(width / 2, height / 2, 'FASE COMPLETA!', {
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '80px',
-        fontStyle: 'bold',
+        fontFamily: FONTE,
+        fontSize: '84px',
         color: '#ffffff',
         stroke: '#2e6da4',
-        strokeThickness: 10,
+        strokeThickness: 12,
         align: 'center',
       })
       .setOrigin(0.5)

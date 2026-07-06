@@ -19,6 +19,14 @@ const config = {
   scene: [BootScene, SelecaoScene, GameScene],
 };
 
+// Espera a fonte do jogo estar pronta antes de desenhar qualquer texto
+// (sem isso o Phaser mediria o texto com a fonte errada).
+try {
+  await document.fonts.load('700 64px "Baloo 2"');
+} catch {
+  // sem a fonte, segue com a reserva (Arial)
+}
+
 // Guardar a instância em window ajuda a inspecionar o jogo no console
 // do navegador e permite testes automatizados.
 window.game = new Phaser.Game(config);
