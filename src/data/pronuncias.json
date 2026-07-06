@@ -1,5 +1,5 @@
 {
-  "_comentario": "Mapa de pronúncia para o TTS: sílaba EXIBIDA -> texto FALADO. O jogo sempre mostra a sílaba como está em palavras.json; este texto acentuado serve só para forçar a voz a ler a sílaba isolada e tônica (pá, dê, nê...), sem virar abreviação (PA->para) nem soletração (NE->êne-é). Vogais E e O usam som fechado (ê/ô). Para ajustar uma pronúncia, edite o valor aqui e rode: npm run gerar-audio (apague antes o mp3 da sílaba em public/assets/audio).",
+  "_comentario": "Mapa de pronúncia para o TTS: sílaba EXIBIDA -> texto FALADO. O jogo sempre mostra a sílaba como está em palavras.json; este texto acentuado serve só para forçar a voz a ler a sílaba isolada e tônica (pá, dê, nê...), sem virar abreviação (PA->para) nem soletração (NE->êne-é). Vogais E e O usam som fechado (ê/ô). Para ajustar uma pronúncia, edite o valor aqui e rode: npm run gerar-audio (apague antes o mp3 da sílaba em public/assets/audio). Exceção conhecida: FO usa 'fó' (aberto) porque a voz soletra 'fô' como éfe-ó.",
   "A": "á",
   "BI": "bí",
   "BO": "bô",
@@ -11,7 +11,7 @@
   "DO": "dô",
   "FA": "fá",
   "FI": "fí",
-  "FO": "fô",
+  "FO": "fó",
   "GA": "gá",
   "GI": "gí",
   "GO": "gô",
