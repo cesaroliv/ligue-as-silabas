@@ -1,9 +1,9 @@
 import Phaser from 'phaser';
 import dados from '../data/palavras.json';
+import { criarFundo, CORES_BOLHAS, FONTE } from '../ui/visual.js';
 
-// Tela provisória de seleção de fase: 10 botões numerados.
-// O menu bonito com estrelas fica para o S6 — esta tela existe
-// para testar qualquer fase durante o desenvolvimento.
+// Tela provisória de seleção de fase: cartões coloridos numerados.
+// O menu definitivo com estrelas fica para o S6.
 export default class SelecaoScene extends Phaser.Scene {
   constructor() {
     super('Selecao');
@@ -12,18 +12,19 @@ export default class SelecaoScene extends Phaser.Scene {
   create() {
     const { width } = this.scale;
 
+    this.fundo = criarFundo(this, null);
+
     this.add
       .text(width / 2, 130, 'ESCOLHA A FASE', {
-        fontFamily: 'Arial, sans-serif',
-        fontSize: '56px',
-        fontStyle: 'bold',
+        fontFamily: FONTE,
+        fontSize: '58px',
         color: '#ffffff',
         stroke: '#2e6da4',
-        strokeThickness: 8,
+        strokeThickness: 10,
       })
-      .setOrigin(0.5);
+      .setOrigin(0.5)
+      .setDepth(2);
 
-    // Grade 2 colunas x 5 linhas de botões grandes
     const colunas = 2;
     const larguraBotao = 260;
     const alturaBotao = 150;
@@ -34,28 +35,49 @@ export default class SelecaoScene extends Phaser.Scene {
     dados.fases.forEach((fase, i) => {
       const col = i % colunas;
       const linha = Math.floor(i / colunas);
-      const x =
-        width / 2 +
-        (col - (colunas - 1) / 2) * (larguraBotao + espacoX);
+      const x = width / 2 + (col - (colunas - 1) / 2) * (larguraBotao + espacoX);
       const y = inicioY + linha * (alturaBotao + espacoY);
+      const cor = CORES_BOLHAS[i % CORES_BOLHAS.length];
 
-      const botao = this.add
-        .rectangle(x, y, larguraBotao, alturaBotao, 0xffffff, 0.9)
-        .setStrokeStyle(6, 0x2e6da4, 1);
-      botao.setInteractive({ useHandCursor: true });
+      const botao = this.add.container(x, y).setDepth(2);
 
-      this.add
-        .text(x, y, String(fase.fase), {
-          fontFamily: 'Arial, sans-serif',
-          fontSize: '64px',
-          fontStyle: 'bold',
-          color: '#2e6da4',
+      // sombra + cartão colorido + número
+      const sombra = this.add
+        .rectangle(4, 8, larguraBotao, alturaBotao, 0x1f4e79, 0.25);
+      sombra.setOrigin(0.5);
+      const carta = this.add
+        .rectangle(0, 0, larguraBotao, alturaBotao, cor, 1)
+        .setStrokeStyle(6, 0xffffff, 0.95);
+      const numero = this.add
+        .text(0, -4, String(fase.fase), {
+          fontFamily: FONTE,
+          fontSize: '72px',
+          color: '#ffffff',
+          stroke: '#1f4e79',
+          strokeThickness: 8,
         })
         .setOrigin(0.5);
 
+      botao.add([sombra, carta, numero]);
+      botao.setSize(larguraBotao, alturaBotao);
+      botao.setInteractive({ useHandCursor: true });
+
+      // efeito de apertar
       botao.on('pointerdown', () => {
-        this.scene.start('Game', { fase: fase.fase, indicePalavra: 0 });
+        this.tweens.add({
+          targets: botao,
+          scale: 0.92,
+          duration: 90,
+          yoyo: true,
+          onComplete: () => {
+            this.scene.start('Game', { fase: fase.fase, indicePalavra: 0 });
+          },
+        });
       });
     });
+  }
+
+  update(_time, delta) {
+    this.fundo?.atualizar(delta);
   }
 }

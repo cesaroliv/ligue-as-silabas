@@ -51,8 +51,20 @@ Jogo Phaser 3 em canvas — a superfície é o navegador. Não basta `npm run bu
 - Jogar as 5 palavras em ordem → slots preenchem, celebração, próxima palavra.
 - Fim da 5ª palavra → texto "FASE COMPLETA!" e reinício na 1ª palavra.
 
+## Figuras (S5+)
+
+- `/figuras-manifest.json` (plugin em vite.config.js) lista os PNGs de
+  `public/assets/figuras/`; o Boot só carrega o que existe — zero 404.
+- `scene.figura.type`: 'Image' = figura real, 'Text' = fallback com o nome.
+- Fluxo "adicionar PNG sem mexer em código": criar um PNG de teste via
+  .NET System.Drawing, recarregar a página e conferir o manifest + tipo.
+
 ## Pegadinhas
 
+- Encerrar `npm run dev` via TaskStop pode deixar o processo node FILHO
+  órfão segurando a porta 5173 (o Vite novo sobe na 5174 e os testes batem
+  no servidor velho). Conferir com
+  `Get-NetTCPConnection -LocalPort 5173 -State Listen` e matar o PID.
 - Boot demora 1,2s antes de entrar na cena Game — esperar ~2,2s após goto.
 - Bolhas nascem escalonadas acima da tela; a bolha desejada pode levar ~10s
   para ficar visível. Fazer polling com timeout generoso.
