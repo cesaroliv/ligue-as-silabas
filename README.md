@@ -36,6 +36,15 @@ npm run preview      # testa localmente a versão final gerada
 npm run gerar-audio  # gera os áudios narrados que estiverem faltando
 ```
 
+## Figuras das palavras
+
+Coloque PNGs 512×512 com fundo transparente em `public/assets/figuras/`,
+com o nome `figura_<palavra>.png` (minúsculas, sem acento — ex.:
+`figura_bola.png`). A lista completa dos 40 arquivos está em
+[public/assets/figuras/LISTA.md](public/assets/figuras/LISTA.md).
+Não precisa mexer em código: o jogo detecta os arquivos sozinho ao
+recarregar a página. Palavra sem figura mostra o nome escrito (reserva).
+
 ## Adicionando ou trocando palavras
 
 1. Edite `src/data/palavras.json`. Cada palavra tem: o texto em caixa alta,
