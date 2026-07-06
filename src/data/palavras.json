@@ -1,27 +1,124 @@
-[
-  {
-    "palavra": "BOLA",
-    "silabas": ["BO", "LA"],
-    "distratores": ["FI", "PE"]
-  },
-  {
-    "palavra": "SAPO",
-    "silabas": ["SA", "PO"],
-    "distratores": ["LU", "ME"]
-  },
-  {
-    "palavra": "GATO",
-    "silabas": ["GA", "TO"],
-    "distratores": ["BI", "FE"]
-  },
-  {
-    "palavra": "PATO",
-    "silabas": ["PA", "TO"],
-    "distratores": ["LU", "MI"]
-  },
-  {
-    "palavra": "MALA",
-    "silabas": ["MA", "LA"],
-    "distratores": ["TO", "PI"]
-  }
-]
+{
+  "fases": [
+    {
+      "fase": 1,
+      "multiplicadorVelocidade": 1.0,
+      "distratoresPorPalavra": 2,
+      "palavras": [
+        { "palavra": "BOLA", "silabas": ["BO", "LA"], "distratores": ["FI", "PE"] },
+        { "palavra": "SAPO", "silabas": ["SA", "PO"], "distratores": ["LU", "ME"] },
+        { "palavra": "GATO", "silabas": ["GA", "TO"], "distratores": ["BI", "FE"] },
+        { "palavra": "PATO", "silabas": ["PA", "TO"], "distratores": ["LU", "MI"] },
+        { "palavra": "MALA", "silabas": ["MA", "LA"], "distratores": ["TO", "PI"] }
+      ]
+    },
+    {
+      "fase": 2,
+      "multiplicadorVelocidade": 1.0,
+      "distratoresPorPalavra": 2,
+      "palavras": [
+        { "palavra": "CASA", "silabas": ["CA", "SA"], "distratores": ["BI", "LO"] },
+        { "palavra": "DEDO", "silabas": ["DE", "DO"], "distratores": ["FA", "PI"] },
+        { "palavra": "FOGO", "silabas": ["FO", "GO"], "distratores": ["LA", "TI"] },
+        { "palavra": "PIPA", "silabas": ["PI", "PA"], "distratores": ["SU", "ME"] },
+        { "palavra": "LUA", "silabas": ["LU", "A"], "distratores": ["BE", "RO"] }
+      ]
+    },
+    {
+      "fase": 3,
+      "multiplicadorVelocidade": 1.0,
+      "distratoresPorPalavra": 2,
+      "palavras": [
+        { "palavra": "VACA", "silabas": ["VA", "CA"], "distratores": ["TU", "LE"] },
+        { "palavra": "MOTO", "silabas": ["MO", "TO"], "distratores": ["FA", "PI"] },
+        { "palavra": "SUCO", "silabas": ["SU", "CO"], "distratores": ["BE", "LA"] },
+        { "palavra": "BICO", "silabas": ["BI", "CO"], "distratores": ["NA", "FU"] },
+        { "palavra": "RATO", "silabas": ["RA", "TO"], "distratores": ["PE", "LI"] }
+      ]
+    },
+    {
+      "fase": 4,
+      "multiplicadorVelocidade": 1.0,
+      "distratoresPorPalavra": 2,
+      "palavras": [
+        { "palavra": "LOBO", "silabas": ["LO", "BO"], "distratores": ["FA", "TE"] },
+        { "palavra": "VELA", "silabas": ["VE", "LA"], "distratores": ["MO", "TI"] },
+        { "palavra": "TATU", "silabas": ["TA", "TU"], "distratores": ["PE", "BI"] },
+        { "palavra": "BULE", "silabas": ["BU", "LE"], "distratores": ["SA", "MI"] },
+        { "palavra": "FACA", "silabas": ["FA", "CA"], "distratores": ["LU", "PE"] }
+      ]
+    },
+    {
+      "fase": 5,
+      "multiplicadorVelocidade": 1.0,
+      "distratoresPorPalavra": 2,
+      "palavras": [
+        { "palavra": "SAPATO", "silabas": ["SA", "PA", "TO"], "distratores": ["LE", "MI"] },
+        { "palavra": "BONECA", "silabas": ["BO", "NE", "CA"], "distratores": ["TI", "FU"] },
+        { "palavra": "CAVALO", "silabas": ["CA", "VA", "LO"], "distratores": ["PE", "TI"] },
+        { "palavra": "PANELA", "silabas": ["PA", "NE", "LA"], "distratores": ["CO", "FI"] },
+        { "palavra": "TOMATE", "silabas": ["TO", "MA", "TE"], "distratores": ["LI", "FU"] }
+      ]
+    },
+    {
+      "fase": 6,
+      "multiplicadorVelocidade": 1.0,
+      "distratoresPorPalavra": 2,
+      "palavras": [
+        { "palavra": "JANELA", "silabas": ["JA", "NE", "LA"], "distratores": ["BO", "TI"] },
+        { "palavra": "MENINO", "silabas": ["ME", "NI", "NO"], "distratores": ["CA", "FU"] },
+        { "palavra": "GIRAFA", "silabas": ["GI", "RA", "FA"], "distratores": ["TU", "PO"] },
+        { "palavra": "PETECA", "silabas": ["PE", "TE", "CA"], "distratores": ["LO", "MI"] },
+        { "palavra": "MACACO", "silabas": ["MA", "CA", "CO"], "distratores": ["TI", "LE"] }
+      ]
+    },
+    {
+      "fase": 7,
+      "multiplicadorVelocidade": 1.0,
+      "distratoresPorPalavra": 3,
+      "palavras": [
+        { "palavra": "RODA", "silabas": ["RO", "DA"], "distratores": ["PE", "MI", "TU"] },
+        { "palavra": "FITA", "silabas": ["FI", "TA"], "distratores": ["LO", "BE", "SU"] },
+        { "palavra": "PIPOCA", "silabas": ["PI", "PO", "CA"], "distratores": ["LE", "MU", "FA"] },
+        { "palavra": "CANETA", "silabas": ["CA", "NE", "TA"], "distratores": ["BO", "FI", "LU"] },
+        { "palavra": "SACOLA", "silabas": ["SA", "CO", "LA"], "distratores": ["PE", "TI", "MU"] }
+      ]
+    },
+    {
+      "fase": 8,
+      "multiplicadorVelocidade": 1.0,
+      "distratoresPorPalavra": 3,
+      "palavras": [
+        { "palavra": "PIJAMA", "silabas": ["PI", "JA", "MA"], "distratores": ["TE", "BO", "LU"] },
+        { "palavra": "CAMISA", "silabas": ["CA", "MI", "SA"], "distratores": ["TO", "LE", "FU"] },
+        { "palavra": "BIGODE", "silabas": ["BI", "GO", "DE"], "distratores": ["NA", "SU", "LE"] },
+        { "palavra": "TIJOLO", "silabas": ["TI", "JO", "LO"], "distratores": ["ME", "BA", "FU"] },
+        { "palavra": "GAVETA", "silabas": ["GA", "VE", "TA"], "distratores": ["LO", "MI", "BU"] }
+      ]
+    },
+    {
+      "fase": 9,
+      "multiplicadorVelocidade": 1.15,
+      "distratoresPorPalavra": 4,
+      "palavras": [
+        { "palavra": "GATO", "silabas": ["GA", "TO"], "distratores": ["BE", "LI", "MU", "FA"] },
+        { "palavra": "VELA", "silabas": ["VE", "LA"], "distratores": ["PI", "TU", "BO", "SO"] },
+        { "palavra": "SUCO", "silabas": ["SU", "CO"], "distratores": ["LA", "PE", "MI", "FO"] },
+        { "palavra": "BONECA", "silabas": ["BO", "NE", "CA"], "distratores": ["TU", "FI", "LE", "SA"] },
+        { "palavra": "JANELA", "silabas": ["JA", "NE", "LA"], "distratores": ["BO", "TI", "FU", "CO"] }
+      ]
+    },
+    {
+      "fase": 10,
+      "multiplicadorVelocidade": 1.15,
+      "distratoresPorPalavra": 4,
+      "palavras": [
+        { "palavra": "PIPA", "silabas": ["PI", "PA"], "distratores": ["LO", "TE", "MU", "SA"] },
+        { "palavra": "LOBO", "silabas": ["LO", "BO"], "distratores": ["FA", "TI", "ME", "SU"] },
+        { "palavra": "VACA", "silabas": ["VA", "CA"], "distratores": ["PE", "LI", "TO", "MU"] },
+        { "palavra": "SAPATO", "silabas": ["SA", "PA", "TO"], "distratores": ["LE", "MI", "BU", "FO"] },
+        { "palavra": "PIPOCA", "silabas": ["PI", "PO", "CA"], "distratores": ["LE", "MU", "FA", "TE"] }
+      ]
+    }
+  ]
+}
