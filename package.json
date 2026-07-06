@@ -8,9 +8,11 @@
     "dev": "vite",
     "dev:celular": "vite --host",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gerar-audio": "node scripts/gerar-audio.mjs"
   },
   "devDependencies": {
+    "msedge-tts": "^2.0.6",
     "vite": "^8.1.3"
   },
   "dependencies": {

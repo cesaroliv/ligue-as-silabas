@@ -30,20 +30,39 @@ Depois abra no navegador o endereço que aparecer no terminal (normalmente
 ## Outros comandos
 
 ```bash
-npm run build     # gera a versão final na pasta dist/
-npm run preview   # testa localmente a versão final gerada
+npm run dev:celular  # roda liberando acesso pela rede Wi-Fi (teste no celular)
+npm run build        # gera a versão final na pasta dist/
+npm run preview      # testa localmente a versão final gerada
+npm run gerar-audio  # gera os áudios narrados que estiverem faltando
 ```
+
+## Adicionando ou trocando palavras
+
+1. Edite `src/data/palavras.json`. Cada palavra tem: o texto em caixa alta,
+   as sílabas na ordem e as sílabas-distração. Cada fase tem número,
+   velocidade de queda (`multiplicadorVelocidade`) e quantidade de
+   distratores.
+2. Rode `npm run gerar-audio`. O script lê o JSON e cria em
+   `public/assets/audio/` um MP3 por palavra (`palavra_bola.mp3`) e um por
+   sílaba única (`silaba_bo.mp3`), com voz neural PT-BR (Francisca) em
+   ritmo mais lento, próprio para alfabetização. Áudios que já existem são
+   pulados — só o que falta é gerado. Precisa de internet (a voz vem do
+   serviço do Microsoft Edge).
 
 ## Estrutura de pastas
 
 ```
 ├── index.html          # página que carrega o jogo
 ├── public/
-│   └── assets/         # imagens e áudios do jogo
+│   └── assets/
+│       └── audio/      # áudios narrados (gerados por npm run gerar-audio)
+├── scripts/
+│   └── gerar-audio.mjs # gerador de áudio TTS (lê palavras.json)
 └── src/
     ├── main.js         # configuração do Phaser (ponto de entrada)
-    ├── scenes/         # cenas do jogo (Boot, Menu, Jogo, FimDeFase)
-    └── data/           # conteúdo editável (futuro palavras.json)
+    ├── scenes/         # cenas do jogo (Boot, Selecao, Game)
+    └── data/
+        └── palavras.json  # 10 fases, palavras, sílabas e distratores
 ```
 
 ## Documentação
