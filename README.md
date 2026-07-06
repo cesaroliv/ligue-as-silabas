@@ -42,12 +42,21 @@ npm run gerar-audio  # gera os áudios narrados que estiverem faltando
    as sílabas na ordem e as sílabas-distração. Cada fase tem número,
    velocidade de queda (`multiplicadorVelocidade`) e quantidade de
    distratores.
-2. Rode `npm run gerar-audio`. O script lê o JSON e cria em
+2. Para sílabas novas, adicione também a pronúncia em
+   `src/data/pronuncias.json`. Esse arquivo diz ao gerador COMO FALAR cada
+   sílaba (ex.: `"PA": "pá"`, `"NE": "nê"`) — sem ele a voz pode expandir
+   PA como "para" ou soletrar NE. O que aparece na tela continua vindo de
+   `palavras.json`; o mapa afeta só o som. O padrão do projeto: sílaba
+   isolada e tônica, com E e O fechados (ê/ô).
+3. Rode `npm run gerar-audio`. O script lê os dois JSON e cria em
    `public/assets/audio/` um MP3 por palavra (`palavra_bola.mp3`) e um por
    sílaba única (`silaba_bo.mp3`), com voz neural PT-BR (Francisca) em
    ritmo mais lento, próprio para alfabetização. Áudios que já existem são
-   pulados — só o que falta é gerado. Precisa de internet (a voz vem do
-   serviço do Microsoft Edge).
+   pulados — para regravar um, apague o MP3 correspondente e rode de novo.
+   Precisa de internet (a voz vem do serviço do Microsoft Edge).
+4. Para conferir o resultado de ouvido, rode `npm run dev` e abra
+   `http://localhost:5173/audit.html`: a página lista todas as sílabas com
+   botão de play em cada uma e um botão "tocar todas em sequência".
 
 ## Estrutura de pastas
 

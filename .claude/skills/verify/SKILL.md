@@ -34,6 +34,17 @@ Jogo Phaser 3 em canvas — a superfície é o navegador. Não basta `npm run bu
 - Config por fase: `scene.numeroFase`, `scene.velocidadeQueda`
   (fases 9-10 = 103,5), `scene.bolhas.length` (2 síl + 4 distratores = 6).
 
+## Auditoria de áudio
+
+- `/audit.html` (só no dev server) lista as sílabas com play individual e
+  em sequência. O texto FALADO vem de `src/data/pronuncias.json`
+  (sílaba exibida ≠ texto enviado ao TTS).
+- Checagem automatizada útil: medir `Audio().duration` de todas as sílabas —
+  pronúncia expandida/soletrada aparece como outlier (>1,5x a média).
+- Favicon: os 404 de favicon aparecem no console mas NÃO nos eventos de
+  response do Playwright (o Chromium busca favicon fora do fluxo da página).
+  Toda página HTML nova precisa do favicon em data URI.
+
 ## Fluxos que valem dirigir
 
 - Clicar bolha errada / fora de ordem → `proximaSilaba` não muda, bolha balança e segue.

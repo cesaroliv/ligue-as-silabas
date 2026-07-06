@@ -17,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 
 const RAIZ = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const ARQUIVO_PALAVRAS = path.join(RAIZ, 'src', 'data', 'palavras.json');
+const ARQUIVO_PRONUNCIAS = path.join(RAIZ, 'src', 'data', 'pronuncias.json');
 const PASTA_SAIDA = path.join(RAIZ, 'public', 'assets', 'audio');
 
 const VOZ = 'pt-BR-FranciscaNeural';
@@ -33,6 +34,10 @@ async function existe(caminho) {
 }
 
 const dados = JSON.parse(await readFile(ARQUIVO_PALAVRAS, 'utf8'));
+
+// Mapa sílaba exibida -> texto falado (força pronúncia isolada e tônica;
+// sem ele, o TTS pode expandir PA para "para" ou soletrar NE como "êne-é")
+const pronuncias = JSON.parse(await readFile(ARQUIVO_PRONUNCIAS, 'utf8'));
 
 // Coleta palavras e sílabas únicas de todas as fases
 const palavras = new Set();
@@ -51,8 +56,18 @@ const tarefas = [];
 for (const p of palavras) {
   tarefas.push([`palavra_${p.toLowerCase()}.mp3`, p.toLowerCase()]);
 }
+const semPronuncia = [];
 for (const s of silabas) {
-  tarefas.push([`silaba_${s.toLowerCase()}.mp3`, s.toLowerCase()]);
+  const falado = pronuncias[s];
+  if (!falado) semPronuncia.push(s);
+  tarefas.push([`silaba_${s.toLowerCase()}.mp3`, falado ?? s.toLowerCase()]);
+}
+if (semPronuncia.length) {
+  console.warn(
+    `AVISO: sílaba(s) sem entrada em pronuncias.json (usando o texto cru, ` +
+      `pronúncia pode sair errada): ${semPronuncia.join(', ')}\n` +
+      `Adicione-as em src/data/pronuncias.json e rode de novo.`
+  );
 }
 
 await mkdir(PASTA_SAIDA, { recursive: true });

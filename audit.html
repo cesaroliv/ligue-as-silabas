@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auditoria de Áudio — Ligue as Sílabas</title>
+    <!-- Ícone da aba embutido (evita erro 404 de favicon no console) -->
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2245%22 fill=%22%23ff9f45%22/><text x=%2250%22 y=%2268%22 font-size=%2250%22 font-family=%22Arial%22 font-weight=%22bold%22 fill=%22white%22 text-anchor=%22middle%22>♪</text></svg>"
+    />
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #87ceeb;
+        margin: 0;
+        padding: 24px;
+      }
+      h1 {
+        color: #fff;
+        text-shadow: 0 2px 4px rgba(46, 109, 164, 0.6);
+        text-align: center;
+      }
+      p.dica {
+        text-align: center;
+        color: #1f4e79;
+        max-width: 600px;
+        margin: 0 auto 20px;
+      }
+      .acoes {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+      button.tocar-todas {
+        font-size: 20px;
+        font-weight: bold;
+        padding: 14px 28px;
+        border: none;
+        border-radius: 12px;
+        background: #2e6da4;
+        color: #fff;
+        cursor: pointer;
+      }
+      .grade {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 14px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .carta {
+        background: #fff;
+        border: 4px solid #2e6da4;
+        border-radius: 14px;
+        padding: 14px 8px;
+        text-align: center;
+        cursor: pointer;
+        user-select: none;
+      }
+      .carta.tocando {
+        background: #ffe9a8;
+        border-color: #ff9f45;
+      }
+      .carta .silaba {
+        font-size: 40px;
+        font-weight: bold;
+        color: #2e6da4;
+      }
+      .carta .falado {
+        font-size: 15px;
+        color: #777;
+        margin-top: 4px;
+      }
+      .carta .play {
+        font-size: 22px;
+        margin-top: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🔊 Auditoria das sílabas</h1>
+    <p class="dica">
+      Toque numa carta para ouvir a sílaba. Embaixo de cada uma está o texto
+      enviado à voz (o mapa fica em <b>src/data/pronuncias.json</b>). Ou use o
+      botão para ouvir todas em sequência.
+    </p>
+    <div class="acoes">
+      <button class="tocar-todas" id="tocarTodas">▶ Tocar todas em sequência</button>
+    </div>
+    <div class="grade" id="grade"></div>
+
+    <script type="module">
+      import dados from '/src/data/palavras.json';
+      import pronuncias from '/src/data/pronuncias.json';
+
+      const silabas = new Set();
+      for (const fase of dados.fases) {
+        for (const p of fase.palavras) {
+          for (const s of p.silabas) silabas.add(s);
+        }
+      }
+      const lista = [...silabas].sort();
+
+      const grade = document.getElementById('grade');
+      const cartas = new Map();
+
+      function tocar(silaba) {
+        return new Promise((fim) => {
+          const carta = cartas.get(silaba);
+          const audio = new Audio(
+            `/assets/audio/silaba_${silaba.toLowerCase()}.mp3`
+          );
+          carta.classList.add('tocando');
+          audio.onended = () => {
+            carta.classList.remove('tocando');
+            fim();
+          };
+          audio.onerror = () => {
+            carta.classList.remove('tocando');
+            carta.style.borderColor = 'red';
+            fim();
+          };
+          audio.play();
+        });
+      }
+
+      for (const s of lista) {
+        const carta = document.createElement('div');
+        carta.className = 'carta';
+        carta.innerHTML = `
+          <div class="silaba">${s}</div>
+          <div class="falado">fala: "${pronuncias[s] ?? s.toLowerCase()}"</div>
+          <div class="play">▶</div>`;
+        carta.onclick = () => tocar(s);
+        grade.appendChild(carta);
+        cartas.set(s, carta);
+      }
+
+      document.getElementById('tocarTodas').onclick = async () => {
+        for (const s of lista) {
+          await tocar(s);
+          await new Promise((r) => setTimeout(r, 350));
+        }
+      };
+    </script>
+  </body>
+</html>
