@@ -9,6 +9,12 @@ import {
   CORES_BOLHAS,
   FONTE,
 } from '../ui/visual.js';
+import {
+  MODOS,
+  carregarModo,
+  fatorDoModo,
+  criarSeletorVelocidade,
+} from '../ui/velocidade.js';
 
 const RAIO_BOLHA = 78;
 
@@ -34,9 +40,11 @@ export default class GameScene extends Phaser.Scene {
 
     this.fase = dados.fases.find((f) => f.fase === this.numeroFase);
     this.dados = this.fase.palavras[this.indicePalavra];
-    this.velocidadeQueda = VELOCIDADE_BASE * this.fase.multiplicadorVelocidade;
+    this.modoVelocidade = carregarModo();
+    this.aplicarVelocidade();
     this.proximaSilaba = 0; // posição da próxima sílaba a acertar
     this.travado = false; // trava toques durante a celebração
+    this.pausado = false; // dosador de velocidade aberto
     this.bolhas = [];
 
     this.fundo = criarFundo(this, this.numeroFase);
@@ -45,9 +53,74 @@ export default class GameScene extends Phaser.Scene {
     this.criarPontinhosProgresso();
     this.criarSlots();
     this.criarBolhas();
+    this.criarBotaoVelocidade();
 
     // Narra a palavra ao aparecer
     this.time.delayedCall(300, () => this.falarPalavra());
+  }
+
+  // Velocidade final = base * configuração da fase * modo escolhido
+  aplicarVelocidade() {
+    this.velocidadeQueda =
+      VELOCIDADE_BASE *
+      this.fase.multiplicadorVelocidade *
+      fatorDoModo(this.modoVelocidade);
+  }
+
+  // --- Botãozinho discreto no canto: abre o dosador de velocidade ---
+  criarBotaoVelocidade() {
+    const { width } = this.scale;
+    const modo = MODOS.find((m) => m.id === this.modoVelocidade);
+
+    const fundo = this.add
+      .circle(width - 46, 46, 34, 0xffffff, 0.55)
+      .setStrokeStyle(4, 0xffffff, 0.8)
+      .setDepth(12);
+    this.iconeVelocidade = this.add
+      .text(width - 46, 48, modo.icone, {
+        fontFamily:
+          '"Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif',
+        fontSize: '34px',
+      })
+      .setOrigin(0.5)
+      .setDepth(12);
+
+    fundo
+      .setInteractive({ useHandCursor: true })
+      .on('pointerdown', () => this.abrirDosador());
+  }
+
+  abrirDosador() {
+    if (this.travado || this.pausado) return;
+    this.pausado = true; // as bolhas congelam enquanto escolhe
+
+    const { width, height } = this.scale;
+    const grupo = [];
+
+    const veu = this.add
+      .rectangle(width / 2, height / 2, width, height, 0x1f3a5c, 0.55)
+      .setDepth(40)
+      .setInteractive(); // engole toques nas bolhas atrás
+    grupo.push(veu);
+
+    const seletor = criarSeletorVelocidade(this, width / 2, height / 2, (id) => {
+      this.modoVelocidade = id;
+      this.aplicarVelocidade();
+      this.iconeVelocidade.setText(MODOS.find((m) => m.id === id).icone);
+      fechar();
+    });
+    seletor.setDepth(41).setScale(1.3);
+    grupo.push(seletor);
+
+    let fechado = false;
+    const fechar = () => {
+      if (fechado) return; // o toque numa opção também atinge o véu atrás
+      fechado = true;
+      for (const g of grupo) g.destroy();
+      this.pausado = false;
+    };
+    // tocar fora das opções também fecha (sem trocar nada)
+    veu.on('pointerdown', fechar);
   }
 
   // --- Painel superior: cartão branco com a figura da palavra ---
@@ -185,6 +258,8 @@ export default class GameScene extends Phaser.Scene {
 
     this.fundo?.atualizar(delta);
 
+    if (this.pausado) return; // dosador aberto: bolhas congeladas
+
     for (const bolha of this.bolhas) {
       if (bolha.capturada) continue;
       bolha.y += (this.velocidadeQueda * delta) / 1000;
@@ -226,7 +301,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   tocouBolha(bolha) {
-    if (this.travado || bolha.capturada || bolha.balancando) return;
+    if (this.travado || this.pausado || bolha.capturada || bolha.balancando)
+      return;
 
     const silabaEsperada = this.dados.silabas[this.proximaSilaba];
 
@@ -379,4 +455,5 @@ export default class GameScene extends Phaser.Scene {
       }
     });
   }
+
 }

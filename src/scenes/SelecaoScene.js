@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import dados from '../data/palavras.json';
 import { criarFundo, CORES_BOLHAS, FONTE } from '../ui/visual.js';
+import { criarSeletorVelocidade } from '../ui/velocidade.js';
 
 // Tela provisória de seleção de fase: cartões coloridos numerados.
 // O menu definitivo com estrelas fica para o S6.
@@ -15,7 +16,7 @@ export default class SelecaoScene extends Phaser.Scene {
     this.fundo = criarFundo(this, null);
 
     this.add
-      .text(width / 2, 130, 'ESCOLHA A FASE', {
+      .text(width / 2, 100, 'ESCOLHA A FASE', {
         fontFamily: FONTE,
         fontSize: '58px',
         color: '#ffffff',
@@ -25,12 +26,15 @@ export default class SelecaoScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setDepth(2);
 
+    // Dosador de velocidade (vale para todas as fases, fica salvo)
+    criarSeletorVelocidade(this, width / 2, 225).setDepth(2);
+
     const colunas = 2;
     const larguraBotao = 260;
-    const alturaBotao = 150;
+    const alturaBotao = 140;
     const espacoX = 60;
-    const espacoY = 40;
-    const inicioY = 320;
+    const espacoY = 36;
+    const inicioY = 390;
 
     dados.fases.forEach((fase, i) => {
       const col = i % colunas;
