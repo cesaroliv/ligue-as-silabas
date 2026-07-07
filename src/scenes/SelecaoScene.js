@@ -16,7 +16,7 @@ export default class SelecaoScene extends Phaser.Scene {
     this.fundo = criarFundo(this, null);
 
     this.add
-      .text(width / 2, 100, 'ESCOLHA A FASE', {
+      .text(width / 2, 78, 'ESCOLHA A FASE', {
         fontFamily: FONTE,
         fontSize: '58px',
         color: '#ffffff',
@@ -27,7 +27,7 @@ export default class SelecaoScene extends Phaser.Scene {
       .setDepth(2);
 
     // Dosador de velocidade (vale para todas as fases, fica salvo)
-    criarSeletorVelocidade(this, width / 2, 225).setDepth(2);
+    criarSeletorVelocidade(this, width / 2, 252).setDepth(2);
 
     const colunas = 2;
     const larguraBotao = 260;

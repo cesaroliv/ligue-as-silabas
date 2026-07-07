@@ -35,13 +35,26 @@ export function fatorDoModo(id) {
   return MODOS.find((m) => m.id === id)?.fator ?? 1.0;
 }
 
-// Seletor visual: 3 ícones grandes, o escolhido destacado.
+// Seletor visual: título + 3 ícones grandes, o escolhido destacado.
 // aoEscolher(id) é chamado a cada troca (a escolha já sai salva).
 export function criarSeletorVelocidade(scene, x, y, aoEscolher) {
   const container = scene.add.container(x, y);
   const espaco = 150;
   const opcoes = [];
   let atual = carregarModo();
+
+  // Sem o título, os três bichinhos não explicam para que servem
+  container.add(
+    scene.add
+      .text(0, -95, 'VELOCIDADE DAS BOLHAS', {
+        fontFamily: '"Baloo 2", Arial, sans-serif',
+        fontSize: '30px',
+        color: '#ffffff',
+        stroke: '#2e6da4',
+        strokeThickness: 6,
+      })
+      .setOrigin(0.5)
+  );
 
   MODOS.forEach((modo, i) => {
     const ox = (i - 1) * espaco;
