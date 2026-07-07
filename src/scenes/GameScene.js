@@ -15,6 +15,7 @@ import {
   fatorDoModo,
   criarSeletorVelocidade,
 } from '../ui/velocidade.js';
+import { registrarFase, calcularEstrelas } from '../ui/progresso.js';
 
 const RAIO_BOLHA = 78;
 
@@ -33,6 +34,9 @@ export default class GameScene extends Phaser.Scene {
   init(data) {
     this.numeroFase = data.fase ?? 1;
     this.indicePalavra = data.indicePalavra ?? 0;
+    // Palavras feitas sem nenhum erro nesta fase (vira estrelas no fim)
+    this.palavrasPerfeitas = data.perfeitas ?? 0;
+    this.errosNaPalavra = 0;
   }
 
   create() {
@@ -365,6 +369,24 @@ export default class GameScene extends Phaser.Scene {
     }
   }
 
+  errou(bolha) {
+    bolha.balancando = true;
+    this.errosNaPalavra++;
+    this.somErro();
+    this.tweens.add({
+      targets: bolha,
+      angle: { from: -12, to: 12 },
+      duration: 90,
+      yoyo: true,
+      repeat: 3,
+      ease: 'Sine.easeInOut',
+      onComplete: () => {
+        bolha.angle = 0;
+        bolha.balancando = false;
+      },
+    });
+  }
+
   confete(x, y, quantidade) {
     const particulas = this.add.particles(x, y, texturaConfete(this), {
       speed: { min: 240, max: 520 },
@@ -409,12 +431,18 @@ export default class GameScene extends Phaser.Scene {
       ease: 'Sine.easeInOut',
     });
 
+    if (this.errosNaPalavra === 0) this.palavrasPerfeitas++;
+
     this.time.delayedCall(1500, () => {
       const proxima = this.indicePalavra + 1;
       if (proxima >= this.fase.palavras.length) {
         this.faseCompleta();
       } else {
-        this.scene.restart({ fase: this.numeroFase, indicePalavra: proxima });
+        this.scene.restart({
+          fase: this.numeroFase,
+          indicePalavra: proxima,
+          perfeitas: this.palavrasPerfeitas,
+        });
       }
     });
   }
@@ -437,10 +465,30 @@ export default class GameScene extends Phaser.Scene {
     this.time.delayedCall(1100, () => particulas.destroy());
   }
 
-  // Tela de fim de fase: PARABÉNS! + fogos + botões de navegação
+  // Sino curto e brilhante para cada estrela que surge
+  somEstrela(indice) {
+    const ctx = this.sound.context;
+    if (!ctx || ctx.state !== 'running') return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = [660, 830, 1050][indice] ?? 660;
+    gain.gain.setValueAtTime(0.14, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.5);
+  }
+
+  // Tela de fim de fase: PARABÉNS! + estrelas + fogos + navegação
   faseCompleta() {
     const { width, height } = this.scale;
     const ultimaFase = !dados.fases.some((f) => f.fase === this.numeroFase + 1);
+
+    // resultado da fase: estrelas pelas palavras feitas sem erro
+    const estrelas = calcularEstrelas(this.palavrasPerfeitas);
+    registrarFase(this.numeroFase, estrelas);
 
     // véu escuro suave: separa o momento da conquista do jogo atrás
     this.add
@@ -449,6 +497,34 @@ export default class GameScene extends Phaser.Scene {
       .setInteractive();
 
     this.tocarAudio('extra_parabens');
+
+    // três espaços de estrela; as conquistadas surgem uma a uma
+    for (let i = 0; i < 3; i++) {
+      const x = width / 2 + (i - 1) * 120;
+      const y = height / 2 - 20;
+      this.add
+        .star(x, y, 5, 20, 46, 0x1f3a5c, 0.5)
+        .setStrokeStyle(4, 0xffffff, 0.35)
+        .setDepth(32);
+      if (i < estrelas) {
+        const cheia = this.add
+          .star(x, y, 5, 20, 46, 0xffd23e, 1)
+          .setStrokeStyle(5, 0xffffff, 1)
+          .setDepth(33)
+          .setScale(0)
+          .setAngle(-40);
+        this.time.delayedCall(900 + i * 450, () => {
+          this.somEstrela(i);
+          this.tweens.add({
+            targets: cheia,
+            scale: 1,
+            angle: 0,
+            duration: 380,
+            ease: 'Back.easeOut',
+          });
+        });
+      }
+    }
 
     const titulo = this.add
       .text(width / 2, height / 2 - 200, ultimaFase ? 'VOCÊ\nCOMPLETOU\nTUDO!' : 'PARABÉNS!', {
