@@ -11,6 +11,37 @@ export default class BootScene extends Phaser.Scene {
   }
 
   preload() {
+    // Título + progresso visíveis JÁ durante o download dos assets
+    // (sem isso a tela fica azul e muda, parecendo travada)
+    const { width, height } = this.scale;
+    this.fundo = criarFundo(this, null);
+    this.add
+      .text(width / 2, height / 2 - 60, 'LIGUE AS SÍLABAS', {
+        fontFamily: FONTE,
+        fontSize: '68px',
+        color: '#ffffff',
+        stroke: '#2e6da4',
+        strokeThickness: 10,
+        align: 'center',
+      })
+      .setOrigin(0.5)
+      .setDepth(1);
+
+    const barraFundo = this.add
+      .rectangle(width / 2, height / 2 + 60, 420, 22, 0xffffff, 0.35)
+      .setDepth(1);
+    const barra = this.add
+      .rectangle(width / 2 - 210, height / 2 + 60, 1, 22, 0xffb830, 1)
+      .setOrigin(0, 0.5)
+      .setDepth(1);
+    this.load.on('progress', (v) => {
+      barra.width = Math.max(1, 420 * v);
+    });
+    this.load.once('complete', () => {
+      barraFundo.destroy();
+      barra.destroy();
+    });
+
     // --- Áudios: palavras e sílabas únicas de todas as fases ---
     const palavras = new Set();
     const silabas = new Set();
@@ -26,6 +57,7 @@ export default class BootScene extends Phaser.Scene {
     for (const s of silabas) {
       this.load.audio(`silaba_${s}`, `assets/audio/silaba_${s}.mp3`);
     }
+    this.load.audio('extra_parabens', 'assets/audio/extra_parabens.mp3');
 
     // --- Figuras: só as que o manifest confirma que existem ---
     this.load.json('figuras-manifest', 'figuras-manifest.json');
@@ -38,24 +70,8 @@ export default class BootScene extends Phaser.Scene {
   }
 
   create() {
-    const { width, height } = this.scale;
-
-    this.fundo = criarFundo(this, null);
-
-    this.add
-      .text(width / 2, height / 2 - 60, 'LIGUE AS SÍLABAS', {
-        fontFamily: FONTE,
-        fontSize: '68px',
-        color: '#ffffff',
-        stroke: '#2e6da4',
-        strokeThickness: 10,
-        align: 'center',
-      })
-      .setOrigin(0.5)
-      .setDepth(1);
-
     // Mostra o título por um instante e vai para a seleção de fase
-    this.time.delayedCall(1200, () => {
+    this.time.delayedCall(900, () => {
       this.scene.start('Selecao');
     });
   }

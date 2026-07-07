@@ -24,6 +24,12 @@ const VOZ = 'pt-BR-FranciscaNeural';
 // Fala mais lenta que o normal: público em alfabetização
 const PROSODIA = { rate: '-20%' };
 
+// Falas avulsas do jogo (celebrações etc.): tom mais alto e ritmo
+// quase normal dão a entonação festiva
+const EXTRAS = [
+  ['extra_parabens.mp3', 'Parabéns!', { rate: '-8%', pitch: '+15%' }],
+];
+
 async function existe(caminho) {
   try {
     await access(caminho);
@@ -69,6 +75,9 @@ if (semPronuncia.length) {
       `Adicione-as em src/data/pronuncias.json e rode de novo.`
   );
 }
+for (const extra of EXTRAS) {
+  tarefas.push(extra);
+}
 
 await mkdir(PASTA_SAIDA, { recursive: true });
 
@@ -78,13 +87,13 @@ await tts.setMetadata(VOZ, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
 let gerados = 0;
 let pulados = 0;
 
-for (const [arquivo, texto] of tarefas) {
+for (const [arquivo, texto, prosodia] of tarefas) {
   const destino = path.join(PASTA_SAIDA, arquivo);
   if (await existe(destino)) {
     pulados++;
     continue;
   }
-  const { audioStream } = tts.toStream(texto, PROSODIA);
+  const { audioStream } = tts.toStream(texto, prosodia ?? PROSODIA);
   await pipeline(audioStream, createWriteStream(destino));
   gerados++;
   console.log(`gerado: ${arquivo}`);

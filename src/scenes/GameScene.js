@@ -419,41 +419,142 @@ export default class GameScene extends Phaser.Scene {
     });
   }
 
+  // Explosão radial de uma cor só, estilo fogos de artifício
+  fogos(x, y, cor) {
+    const particulas = this.add.particles(x, y, texturaConfete(this), {
+      speed: { min: 160, max: 430 },
+      angle: { min: 0, max: 360 },
+      gravityY: 320,
+      lifespan: 950,
+      quantity: 34,
+      scale: { start: 0.9, end: 0 },
+      rotate: { min: 0, max: 360 },
+      tint: [cor],
+      emitting: false,
+    });
+    particulas.setDepth(31);
+    particulas.explode(34);
+    this.time.delayedCall(1100, () => particulas.destroy());
+  }
+
+  // Tela de fim de fase: PARABÉNS! + fogos + botões de navegação
   faseCompleta() {
     const { width, height } = this.scale;
+    const ultimaFase = !dados.fases.some((f) => f.fase === this.numeroFase + 1);
 
-    this.confete(width / 2, height / 2, 80);
+    // véu escuro suave: separa o momento da conquista do jogo atrás
+    this.add
+      .rectangle(width / 2, height / 2, width, height, 0x1f3a5c, 0.35)
+      .setDepth(29)
+      .setInteractive();
 
-    const aviso = this.add
-      .text(width / 2, height / 2, 'FASE COMPLETA!', {
+    this.tocarAudio('extra_parabens');
+
+    const titulo = this.add
+      .text(width / 2, height / 2 - 200, ultimaFase ? 'VOCÊ\nCOMPLETOU\nTUDO!' : 'PARABÉNS!', {
         fontFamily: FONTE,
-        fontSize: '84px',
+        fontSize: ultimaFase ? '88px' : '92px',
         color: '#ffffff',
-        stroke: '#2e6da4',
-        strokeThickness: 12,
+        stroke: '#e8890c',
+        strokeThickness: 14,
         align: 'center',
       })
       .setOrigin(0.5)
       .setScale(0)
-      .setDepth(30);
+      .setDepth(32);
 
+    // entrada com bounce
     this.tweens.add({
-      targets: aviso,
+      targets: titulo,
       scale: 1,
-      duration: 400,
-      ease: 'Back.easeOut',
+      duration: 650,
+      ease: 'Bounce.easeOut',
+    });
+    // e segue pulsando devagar
+    this.tweens.add({
+      targets: titulo,
+      scale: 1.06,
+      duration: 700,
+      yoyo: true,
+      repeat: -1,
+      delay: 700,
+      ease: 'Sine.easeInOut',
     });
 
-    // Avança sozinho para a próxima fase; depois da 10ª volta à seleção
-    this.time.delayedCall(3000, () => {
-      const proximaFase = this.numeroFase + 1;
-      const existe = dados.fases.some((f) => f.fase === proximaFase);
-      if (existe) {
-        this.scene.restart({ fase: proximaFase, indicePalavra: 0 });
-      } else {
+    // festa: confete central + fogos coloridos em sequência
+    this.confete(width / 2, 320, 70);
+    const pontosFogos = [
+      [width * 0.22, 300],
+      [width * 0.78, 260],
+      [width * 0.3, 620],
+      [width * 0.72, 560],
+      [width * 0.5, 200],
+    ];
+    pontosFogos.forEach(([x, y], i) => {
+      this.time.delayedCall(350 + i * 420, () =>
+        this.fogos(x, y, CORES_BOLHAS[i % CORES_BOLHAS.length])
+      );
+    });
+
+    // depois da festa, os botões
+    this.time.delayedCall(3000, () => this.botoesFimDeFase(ultimaFase));
+  }
+
+  botoesFimDeFase(ultimaFase) {
+    const { width, height } = this.scale;
+
+    if (ultimaFase) {
+      this.botaoFim(width / 2, height / 2 + 160, 480, 140, 0x51c15b, '▶  JOGAR DE NOVO', 52, () => {
         this.scene.start('Selecao');
-      }
+      });
+      return;
+    }
+
+    this.botaoFim(width / 2, height / 2 + 160, 480, 140, 0x51c15b, '▶  PRÓXIMA FASE', 52, () => {
+      this.scene.restart({ fase: this.numeroFase + 1, indicePalavra: 0 });
+    });
+    this.botaoFim(width / 2, height / 2 + 330, 330, 100, 0x4d96ff, '↻  REPETIR', 40, () => {
+      this.scene.restart({ fase: this.numeroFase, indicePalavra: 0 });
     });
   }
 
+  botaoFim(x, y, largura, altura, cor, rotulo, tamanhoFonte, acao) {
+    const botao = this.add.container(x, y).setDepth(33).setScale(0);
+
+    const sombra = this.add.rectangle(4, 8, largura, altura, 0x14304d, 0.35);
+    const carta = this.add
+      .rectangle(0, 0, largura, altura, cor, 1)
+      .setStrokeStyle(6, 0xffffff, 0.95);
+    const texto = this.add
+      .text(0, -2, rotulo, {
+        fontFamily: FONTE,
+        fontSize: `${tamanhoFonte}px`,
+        color: '#ffffff',
+        stroke: '#1f4e79',
+        strokeThickness: 8,
+      })
+      .setOrigin(0.5);
+
+    botao.add([sombra, carta, texto]);
+    botao.setSize(largura, altura);
+    botao.setInteractive({ useHandCursor: true });
+    botao.on('pointerdown', () => {
+      this.tweens.add({
+        targets: botao,
+        scale: 0.92,
+        duration: 90,
+        yoyo: true,
+        onComplete: acao,
+      });
+    });
+
+    this.tweens.add({
+      targets: botao,
+      scale: 1,
+      duration: 350,
+      ease: 'Back.easeOut',
+    });
+
+    return botao;
+  }
 }
