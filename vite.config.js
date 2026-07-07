@@ -43,5 +43,8 @@ function pluginManifestFiguras() {
 }
 
 export default defineConfig({
+  // Caminhos relativos: o build funciona em qualquer endereço,
+  // inclusive no subdiretório do GitHub Pages (/ligue-as-silabas/)
+  base: './',
   plugins: [pluginManifestFiguras()],
 });

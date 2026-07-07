@@ -12,6 +12,13 @@ instrucional, pois o jogador ainda não sabe ler.
 - JavaScript puro (vanilla)
 - Mobile-first: controle por toque simples (clique no desktop)
 
+## Jogo publicado
+
+O jogo fica no ar em **https://cesaroliv.github.io/ligue-as-silabas/** —
+qualquer push na branch `main` publica automaticamente a versão nova
+(GitHub Actions, ~2 minutos). Fluxo para atualizar: fazer as mudanças,
+commitar e rodar `git push`.
+
 ## Como rodar
 
 Pré-requisito: [Node.js](https://nodejs.org/) instalado.
@@ -70,6 +77,7 @@ recarregar a página. Palavra sem figura mostra o nome escrito (reserva).
 ## Estrutura de pastas
 
 ```
+├── .github/workflows/  # publicação automática no GitHub Pages
 ├── index.html          # página que carrega o jogo
 ├── public/
 │   └── assets/
@@ -78,10 +86,19 @@ recarregar a página. Palavra sem figura mostra o nome escrito (reserva).
 │   └── gerar-audio.mjs # gerador de áudio TTS (lê palavras.json)
 └── src/
     ├── main.js         # configuração do Phaser (ponto de entrada)
-    ├── scenes/         # cenas do jogo (Boot, Selecao, Game)
+    ├── scenes/         # cenas (Boot, Menu, Selecao, Game)
+    ├── ui/             # visual, velocidade, som/música, progresso
     └── data/
         └── palavras.json  # 10 fases, palavras, sílabas e distratores
 ```
+
+## Progresso e configurações
+
+Tudo fica salvo no navegador (localStorage), sem login: estrelas por fase
+(1-3, pelas palavras feitas sem erro), fases desbloqueadas, som
+ligado/desligado e a velocidade escolhida. O botão 🗑 na seleção de fases
+apaga o progresso (com confirmação). O rodapé do menu é editável na
+constante `RODAPE` em `src/scenes/MenuScene.js`.
 
 ## Documentação
 
