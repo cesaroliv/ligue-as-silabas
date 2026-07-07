@@ -70,9 +70,9 @@ export default class BootScene extends Phaser.Scene {
   }
 
   create() {
-    // Mostra o título por um instante e vai para a seleção de fase
+    // Mostra o título por um instante e vai para o menu
     this.time.delayedCall(900, () => {
-      this.scene.start('Selecao');
+      this.scene.start('Menu');
     });
   }
 

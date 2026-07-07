@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import BootScene from './scenes/BootScene.js';
+import MenuScene from './scenes/MenuScene.js';
 import SelecaoScene from './scenes/SelecaoScene.js';
 import GameScene from './scenes/GameScene.js';
 
@@ -16,7 +17,7 @@ const config = {
     width: 720,
     height: 1280,
   },
-  scene: [BootScene, SelecaoScene, GameScene],
+  scene: [BootScene, MenuScene, SelecaoScene, GameScene],
 };
 
 // Espera a fonte do jogo estar pronta antes de desenhar qualquer texto
