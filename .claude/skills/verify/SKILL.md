@@ -5,6 +5,12 @@ description: Como verificar o jogo Ligue as Sílabas rodando de verdade no naveg
 
 # Verificação do Ligue as Sílabas
 
+Publicado em https://cesaroliv.github.io/ligue-as-silabas/ — todo push na
+main publica via GitHub Actions (~2 min). Depois de mudanças relevantes,
+verificar TAMBÉM no link público (mesma receita Playwright, outra URL).
+O fluxo completo agora é Boot -> Menu (tocar JOGAR) -> Selecao -> Game;
+fases bloqueadas exigem progresso ou limpar localStorage.
+
 Jogo Phaser 3 em canvas — a superfície é o navegador. Não basta `npm run build`.
 
 ## Receita
